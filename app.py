@@ -1,5 +1,5 @@
 import streamlit as st
-import joblib
+import pickle
 import numpy as np
 
 # Page configuration
@@ -45,13 +45,19 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Load the trained model using joblib to prevent module errors
+# Safe Model Loader using pickle and NumPy compatibility fallback
 @st.cache_resource
 def load_model():
-    # Make sure linear_model.pkl was originally saved using joblib.dump() OR pickle
-    # If it was saved with pickle, joblib can still load it in many cases, 
-    # but let's use joblib.load safely:
-    return joblib.load("linear_model.pkl")
+    try:
+        with open("linear_model.pkl", "rb") as file:
+            return pickle.load(file)
+    except AttributeError:
+        import types
+        if not hasattr(np, '_core'):
+            np._core = types.ModuleType('_core')
+            np._core.multiarray = np.core.multiarray
+        with open("linear_model.pkl", "rb") as file:
+            return pickle.load(file)
 
 try:
     model = load_model()
@@ -84,7 +90,6 @@ st.divider()
 
 # Prediction Action Button
 if st.button("🔮 Calculate Estimated Property Price"):
-    # Feature matrix matching the model's feature order[cite: 2]
     features = np.array([[
         square_footage,
         num_bedrooms,
@@ -95,10 +100,8 @@ if st.button("🔮 Calculate Estimated Property Price"):
         neighborhood_quality
     ]])
     
-    # Predict price
     prediction = model.predict(features)[0]
     
-    # Result Card
     st.success("✨ Valuation Completed!")
     
     c_left, c_mid, c_right = st.columns([1, 2, 1])
@@ -111,6 +114,5 @@ if st.button("🔮 Calculate Estimated Property Price"):
             </div>
         """, unsafe_allow_html=True)
 
-# Footer
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: #9ca3af; font-size: 0.85rem;'>Developed with Streamlit • Ready for Deployment</p>", unsafe_allow_html=True)
