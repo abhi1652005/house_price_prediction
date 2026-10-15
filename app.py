@@ -48,7 +48,7 @@ st.markdown("""
 # Load the trained model safely using your exact file name: linear.pkl
 @st.cache_resource
 def load_model():
-    with open("linear.pkl", "rb") as file:
+    with open("models/linear.pkl", "rb") as file:
         model = pickle.load(file)
     return model
 
