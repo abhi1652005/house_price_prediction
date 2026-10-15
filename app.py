@@ -1,5 +1,5 @@
 import streamlit as st
-import pickle
+import joblib
 import numpy as np
 
 # Page configuration
@@ -45,17 +45,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Load the trained model using your exact pkl file name: linear_model.pkl
+# Load the trained model using joblib to prevent module errors
 @st.cache_resource
 def load_model():
-    with open("linear_model.pkl", "wb") as file:
-        model = pickle.load(file)
-    return model
+    # Make sure linear_model.pkl was originally saved using joblib.dump() OR pickle
+    # If it was saved with pickle, joblib can still load it in many cases, 
+    # but let's use joblib.load safely:
+    return joblib.load("linear_model.pkl")
 
 try:
     model = load_model()
-except FileNotFoundError:
-    st.error("⚠️ Model file `linear_model.pkl` not found! Please ensure `linear_model.pkl` is in the same directory as `app.py`.")
+except Exception as e:
+    st.error(f"⚠️ Error loading model: {e}")
     st.stop()
 
 # Header Section
@@ -83,8 +84,7 @@ st.divider()
 
 # Prediction Action Button
 if st.button("🔮 Calculate Estimated Property Price"):
-    # Feature matrix matching the model's feature order[cite: 2]:
-    # ['Square_Footage', 'Num_Bedrooms', 'Num_Bathrooms', 'Year_Built', 'Lot_Size', 'Garage_Size', 'Neighborhood_Quality']
+    # Feature matrix matching the model's feature order[cite: 2]
     features = np.array([[
         square_footage,
         num_bedrooms,
