@@ -1,17 +1,7 @@
-import subprocess
-import sys
-
-# --- AUTOMATIC DEPENDENCY INSTALLER ---
-# This ensures scikit-learn and numpy are installed even if Streamlit ignores requirements.txt
-try:
-    import sklearn
-    import numpy
-except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "scikit-learn", "numpy"])
-
 import streamlit as st
 import pickle
 import numpy as np
+import sys
 
 # --- COMPATIBILITY FIX FOR PICKLE LOAD ---
 try:
