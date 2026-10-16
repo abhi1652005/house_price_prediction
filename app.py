@@ -2,117 +2,108 @@ import streamlit as st
 import pickle
 import numpy as np
 
-# Page configuration
+# Page Configuration
 st.set_page_config(
-    page_title="House Price Predictor",
+    page_title="Real Estate Price Predictor",
     page_icon="🏠",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="centered"
 )
 
-# Custom CSS for fancy styling & UI layout
+# Custom Styling & Modern Theme
 st.markdown("""
     <style>
-    .main {
-        background-color: #f8f9fa;
+    .stApp {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        color: #f8fafc;
     }
-    .stButton>button {
-        width: 100%;
-        background-color: #FF4B4B;
-        color: white;
-        font-weight: bold;
-        border-radius: 8px;
-        padding: 0.6rem;
-        font-size: 1rem;
-        border: none;
-        transition: 0.3s;
+    h1 {
+        color: #818cf8;
+        text-align: center;
+        font-weight: 700;
     }
-    .stButton>button:hover {
-        background-color: #ff3333;
-        box-shadow: 0 4px 12px rgba(255, 75, 75, 0.3);
+    .subtitle {
+        text-align: center;
+        color: #94a3b8;
+        margin-bottom: 30px;
+        font-size: 16px;
     }
     .metric-card {
-        background-color: white;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 16px;
         text-align: center;
-        border: 1px solid #e0e0e0;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
     }
-    h1, h2, h3 {
-        color: #1f2937;
+    .metric-title {
+        color: #34d399;
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .metric-value {
+        color: #6ee7b7;
+        font-size: 32px;
+        font-weight: 700;
+        margin-top: 5px;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Safe Model Loader using pickle and NumPy compatibility fallback
+# Load model without changing the pkl file name
 @st.cache_resource
 def load_model():
-    try:
-        with open("linear_model.pkl", "rb") as file:
-            return pickle.load(file)
-    except AttributeError:
-        import types
-        if not hasattr(np, '_core'):
-            np._core = types.ModuleType('_core')
-            np._core.multiarray = np.core.multiarray
-        with open("linear_model.pkl", "rb") as file:
-            return pickle.load(file)
+    with open('linear_model.pkl', 'rb') as f:
+        return pickle.load(f)
 
-try:
-    model = load_model()
-except Exception as e:
-    st.error(f"⚠️ Error loading model: {e}")
-    st.stop()
+model = load_model()
 
-# Header Section
-st.title("🏠 Residential House Price Predictor")
-st.markdown("Enter property attributes below to estimate market valuation using the deployed **Linear Regression** model[cite: 2].")
-st.divider()
+# Header
+st.markdown("<h1>🏠 Real Estate Valuation AI</h1>", unsafe_allow_html=True)
+st.markdown("<p class='subtitle'>Predict property market values instantly using machine learning</p>", unsafe_allow_html=True)
 
-# Two-column layout for organized input fields
-col1, col2 = st.columns(2, gap="large")
+# Input Layout
+col1, col2 = st.columns(2, gap="medium")
 
 with col1:
-    st.subheader("📐 Property Dimensions")
-    square_footage = st.number_input("Square Footage", min_value=300, max_value=15000, value=2200, step=50, help="Total interior living space[cite: 2].")
-    lot_size = st.number_input("Lot Size (sq ft)", min_value=500, max_value=100000, value=6000, step=100, help="Total property land area[cite: 2].")
-    garage_size = st.number_input("Garage Size (Cars)", min_value=0.0, max_value=6.0, value=2.0, step=1.0, help="Garage capacity in vehicles[cite: 2].")
+    st.markdown("### 📐 Dimensions")
+    square_footage = st.number_input("Square Footage", min_value=300, max_value=10000, value=2000, step=50)
+    lot_size = st.number_input("Lot Size (sq ft)", min_value=500, max_value=50000, value=5000, step=100)
+    garage_size = st.number_input("Garage Size (Cars)", min_value=0, max_value=5, value=2, step=1)
 
 with col2:
-    st.subheader("🏢 Layout & Quality")
-    num_bedrooms = st.number_input("Number of Bedrooms", min_value=1, max_value=12, value=3, step=1, help="Total count of bedrooms[cite: 2].")
-    num_bathrooms = st.number_input("Number of Bathrooms", min_value=1.0, max_value=10.0, value=2.0, step=0.5, help="Total count of bathrooms[cite: 2].")
-    year_built = st.number_input("Year Built", min_value=1800, max_value=2026, value=2012, step=1, help="Original construction year[cite: 2].")
-    neighborhood_quality = st.slider("Neighborhood Quality Score", min_value=1, max_value=10, value=7, step=1, help="Neighborhood rating scale (1-10)[cite: 2].")
+    st.markdown("### 🛋️ Layout & Build")
+    num_bedrooms = st.number_input("Bedrooms", min_value=1, max_value=10, value=3, step=1)
+    num_bathrooms = st.number_input("Bathrooms", min_value=1.0, max_value=10.0, value=2.0, step=0.5)
+    year_built = st.number_input("Year Built", min_value=1800, max_value=2026, value=2010, step=1)
 
-st.divider()
+neighborhood_quality = st.slider("Neighborhood Quality (1 - 10 Scale)", min_value=1, max_value=10, value=7)
 
-# Prediction Action Button
-if st.button("🔮 Calculate Estimated Property Price"):
-    features = np.array([[
-        square_footage,
-        num_bedrooms,
-        num_bathrooms,
-        year_built,
-        lot_size,
-        garage_size,
-        neighborhood_quality
-    ]])
+st.markdown("<br>", unsafe_allow_html=True)
+
+# Prediction Logic matching exact feature training order
+if st.button("Calculate Property Value", use_container_width=True):
+    features = [
+        float(square_footage),
+        float(num_bedrooms),
+        float(num_bathrooms),
+        float(year_built),
+        float(lot_size),
+        float(garage_size),
+        float(neighborhood_quality)
+    ]
     
-    prediction = model.predict(features)[0]
-    
-    st.success("✨ Valuation Completed!")
-    
-    c_left, c_mid, c_right = st.columns([1, 2, 1])
-    with c_mid:
+    try:
+        prediction = model.predict([features])
+        estimated_price = float(prediction[0])
+        
         st.markdown(f"""
             <div class="metric-card">
-                <p style="color: #6b7280; font-size: 1rem; margin-bottom: 0; font-weight: 600;">ESTIMATED MARKET VALUE</p>
-                <h1 style="color: #10b981; font-size: 2.8rem; margin-top: 5px; margin-bottom: 5px;">${prediction:,.2f}</h1>
-                <p style="color: #9ca3af; font-size: 0.85rem;">Powered by scikit-learn Linear Regression[cite: 2]</p>
+                <div class="metric-title">Estimated Property Value</div>
+                <div class="metric-value">${estimated_price:,.2f}</div>
             </div>
         """, unsafe_allow_html=True)
-
-st.markdown("---")
-st.markdown("<p style='text-align: center; color: #9ca3af; font-size: 0.85rem;'>Developed with Streamlit • Ready for Deployment</p>", unsafe_allow_html=True)
+        
+    except Exception as e:
+        st.error(f"Error making prediction: {e}")
