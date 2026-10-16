@@ -1,10 +1,19 @@
+import subprocess
+import sys
+
+# --- AUTOMATIC DEPENDENCY INSTALLER ---
+# This ensures scikit-learn and numpy are installed even if Streamlit ignores requirements.txt
+try:
+    import sklearn
+    import numpy
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "scikit-learn", "numpy"])
+
 import streamlit as st
 import pickle
 import numpy as np
-import sys
 
 # --- COMPATIBILITY FIX FOR PICKLE LOAD ---
-# This automatically fixes NumPy 2.x vs 1.x module path mismatches
 try:
     import numpy._core
 except ImportError:
@@ -65,7 +74,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Load model without changing the pkl file name[cite: 4]
+# Load model without changing the pkl file name
 @st.cache_resource
 def load_model():
     with open('linear_model.pkl', 'rb') as f:
