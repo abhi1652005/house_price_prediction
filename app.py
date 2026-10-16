@@ -1,6 +1,20 @@
 import streamlit as st
 import pickle
 import numpy as np
+import sys
+
+# --- COMPATIBILITY FIX FOR PICKLE LOAD ---
+# This automatically fixes NumPy 2.x vs 1.x module path mismatches
+try:
+    import numpy._core
+except ImportError:
+    try:
+        import numpy.core as core
+        sys.modules['numpy._core'] = core
+        sys.modules['numpy._core.multiarray'] = core.multiarray
+    except Exception:
+        pass
+# ------------------------------------------
 
 # Page Configuration
 st.set_page_config(
@@ -51,13 +65,17 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Load model without changing the pkl file name
+# Load model without changing the pkl file name[cite: 4]
 @st.cache_resource
 def load_model():
     with open('linear_model.pkl', 'rb') as f:
         return pickle.load(f)
 
-model = load_model()
+try:
+    model = load_model()
+except Exception as e:
+    st.error(f"Failed to load model file: {e}")
+    st.stop()
 
 # Header
 st.markdown("<h1>🏠 Real Estate Valuation AI</h1>", unsafe_allow_html=True)
