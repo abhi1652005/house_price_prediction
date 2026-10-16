@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 import sys
 
-# --- COMPATIBILITY FIX FOR PICKLE LOAD ---
+# --- COMPATIBILITY FIX FOR NUMPY/PICKLE ---
 try:
     import numpy._core
 except ImportError:
@@ -22,7 +22,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# Custom Styling & Modern Theme
+# Custom Styling & Modern Dark-Gradient Theme
 st.markdown("""
     <style>
     .stApp {
@@ -64,7 +64,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Load model without changing the pkl file name
+# Load model keeping the exact file name linear_model.pkl[cite: 4]
 @st.cache_resource
 def load_model():
     with open('linear_model.pkl', 'rb') as f:
@@ -80,26 +80,26 @@ except Exception as e:
 st.markdown("<h1>🏠 Real Estate Valuation AI</h1>", unsafe_allow_html=True)
 st.markdown("<p class='subtitle'>Predict property market values instantly using machine learning</p>", unsafe_allow_html=True)
 
-# Input Layout
+# Input Layout matching your model's exact features[cite: 4]
 col1, col2 = st.columns(2, gap="medium")
 
 with col1:
     st.markdown("### 📐 Dimensions")
-    square_footage = st.number_input("Square Footage", min_value=300, max_value=10000, value=2000, step=50)
-    lot_size = st.number_input("Lot Size (sq ft)", min_value=500, max_value=50000, value=5000, step=100)
-    garage_size = st.number_input("Garage Size (Cars)", min_value=0, max_value=5, value=2, step=1)
+    square_footage = st.number_input("Square_Footage", min_value=300, max_value=10000, value=2000, step=50)
+    lot_size = st.number_input("Lot_Size", min_value=500, max_value=50000, value=5000, step=100)
+    garage_size = st.number_input("Garage_Size", min_value=0, max_value=5, value=2, step=1)
 
 with col2:
     st.markdown("### 🛋️ Layout & Build")
-    num_bedrooms = st.number_input("Bedrooms", min_value=1, max_value=10, value=3, step=1)
-    num_bathrooms = st.number_input("Bathrooms", min_value=1.0, max_value=10.0, value=2.0, step=0.5)
-    year_built = st.number_input("Year Built", min_value=1800, max_value=2026, value=2010, step=1)
+    num_bedrooms = st.number_input("Num_Bedrooms", min_value=1, max_value=10, value=3, step=1)
+    num_bathrooms = st.number_input("Num_Bathrooms", min_value=1.0, max_value=10.0, value=2.0, step=0.5)
+    year_built = st.number_input("Year_Built", min_value=1800, max_value=2026, value=2010, step=1)
 
-neighborhood_quality = st.slider("Neighborhood Quality (1 - 10 Scale)", min_value=1, max_value=10, value=7)
+neighborhood_quality = st.slider("Neighborhood_Quality (1 - 10 Scale)", min_value=1, max_value=10, value=7)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Prediction Logic matching exact feature training order
+# Prediction Logic mapping exact feature order from your model header[cite: 4]
 if st.button("Calculate Property Value", use_container_width=True):
     features = [
         float(square_footage),
